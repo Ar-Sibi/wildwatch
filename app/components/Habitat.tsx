@@ -1,4 +1,5 @@
 import React from 'react';
+import HabitatMap from './HabitatMap';
 
 interface HabitatProps {
   speciesName: string;
@@ -34,15 +35,13 @@ const Habitat: React.FC<HabitatProps> = ({ speciesName, commonName, habitatData 
           </p>
         </div>
         
-        {/* Habitat Map Placeholder */}
-        <div className="mt-6 p-4 bg-gray-50 rounded-lg border border-gray-200">
-          <div className="flex items-center justify-center h-32 bg-gradient-to-r from-blue-100 to-green-100 rounded-lg">
-            <div className="text-center text-gray-600">
-              <div className="text-2xl mb-2">🗺️</div>
-              <p className="text-sm font-medium">Habitat Distribution Map</p>
-              <p className="text-xs text-gray-500">Interactive map coming soon</p>
-            </div>
-          </div>
+        {/* Habitat Map */}
+        <div className="mt-6">
+          <HabitatMap 
+            speciesName={speciesName} 
+            commonName={commonName} 
+            hotspots={[]}
+          />
         </div>
       </div>
     );
@@ -187,15 +186,13 @@ const Habitat: React.FC<HabitatProps> = ({ speciesName, commonName, habitatData 
         </div>
       </div>
 
-      {/* Habitat Map Placeholder */}
-      <div className="mt-6 p-4 bg-gray-50 rounded-lg border border-gray-200">
-        <div className="flex items-center justify-center h-32 bg-gradient-to-r from-blue-100 to-green-100 rounded-lg">
-          <div className="text-center text-gray-600">
-            <div className="text-2xl mb-2">🗺️</div>
-            <p className="text-sm font-medium">Habitat Distribution Map</p>
-            <p className="text-xs text-gray-500">Interactive map coming soon</p>
-          </div>
-        </div>
+      {/* Habitat Map */}
+      <div className="mt-6">
+        <HabitatMap 
+          speciesName={speciesName} 
+          commonName={commonName} 
+          hotspots={[]}
+        />
       </div>
     </div>
   );
