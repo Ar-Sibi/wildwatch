@@ -1,10 +1,14 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import CardBody from './CardBody';
+import FoodChainGraph from './FoodChainGraph';
+import Habitat from './Habitat';
 
 interface SpeciesData {
   "Species Name": string;
   "Common Name": string;
   "Description": string;
+  "Food Chain": string;
+  "Habitat": string;
 }
 
 interface UploadedItem {
@@ -16,6 +20,7 @@ const ImageUpload: React.FC = () => {
   const [dragActive, setDragActive] = useState(false);
   const [uploadedItems, setUploadedItems] = useState<UploadedItem[]>([]);
   const [uploading, setUploading] = useState(false);
+  const [activeSection, setActiveSection] = useState<'foodChain' | 'habitat'>('foodChain');
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleDrag = (e: React.DragEvent) => {
@@ -103,12 +108,40 @@ const ImageUpload: React.FC = () => {
     setUploadedItems(prev => prev.filter((_, i) => i !== index));
   };
 
+  const getImageOrientation = (imageUrl: string): Promise<'landscape' | 'portrait'> => {
+    return new Promise((resolve) => {
+      const img = new Image();
+      img.onload = () => {
+        const orientation = img.width > img.height ? 'landscape' : 'portrait';
+        resolve(orientation);
+      };
+      img.src = imageUrl;
+    });
+  };
+
+  const [imageOrientations, setImageOrientations] = useState<{ [key: number]: 'landscape' | 'portrait' }>({});
+
+  // Update image orientations when items change
+  useEffect(() => {
+    const updateOrientations = async () => {
+      const orientations: { [key: number]: 'landscape' | 'portrait' } = {};
+      for (let i = 0; i < uploadedItems.length; i++) {
+        orientations[i] = await getImageOrientation(uploadedItems[i].image);
+      }
+      setImageOrientations(orientations);
+    };
+    
+    if (uploadedItems.length > 0) {
+      updateOrientations();
+    }
+  }, [uploadedItems]);
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-green-50 to-blue-100 p-6">
       <div className="max-w-6xl mx-auto">
         <div className="mb-8">
-          <h1 className="text-4xl font-bold text-gray-900 mb-2">Species Identification</h1>
-          <p className="text-lg text-gray-600">Upload images to identify species and learn more about them.</p>
+          <h1 className="text-4xl font-bold text-gray-900 mb-2">WildWatch</h1>
+          <p className="text-lg text-gray-600">Upload images to identify wildlife and learn more about them.</p>
         </div>
 
         {/* Upload Area - Only show if no species have been identified */}
@@ -166,61 +199,163 @@ const ImageUpload: React.FC = () => {
         {/* Identified Species - Show after successful upload */}
         {uploadedItems.length > 0 && (
           <div className="space-y-6">
-            {uploadedItems.map((item, index) => (
-              <CardBody key={index} className="p-0 overflow-hidden">
-                <div className="grid grid-cols-1 lg:grid-cols-2">
-                  {/* Image Section - Left Half */}
-                  <div className="relative">
-                    <img
-                      src={item.image}
-                      alt={item.speciesData["Common Name"]}
-                      className="w-full h-96 lg:h-full object-cover"
-                    />
-                    <button
-                      onClick={() => removeItem(index)}
-                      className="absolute top-4 right-4 bg-red-500 text-white rounded-full w-8 h-8 flex items-center justify-center hover:bg-red-600 transition-colors duration-200 shadow-lg"
-                    >
-                      ×
-                    </button>
-                  </div>
+            {uploadedItems.map((item, index) => {
+              const orientation = imageOrientations[index];
+              
+              return (
+                <div key={index} className="space-y-6">
+                  <CardBody className="p-0 overflow-hidden">
+                    {orientation === 'landscape' ? (
+                      // Landscape layout: image above content
+                      <div className="flex flex-col">
+                        {/* Image Section - Above */}
+                        <div className="relative flex items-center justify-center p-8 bg-gray-50">
+                          <img
+                            src={item.image}
+                            alt={item.speciesData["Common Name"]}
+                            className="w-full max-w-2xl h-auto object-cover rounded-lg shadow-md"
+                          />
+                          <button
+                            onClick={() => removeItem(index)}
+                            className="absolute top-4 right-4 bg-red-500 text-white rounded-full w-8 h-8 flex items-center justify-center hover:bg-red-600 transition-colors duration-200 shadow-lg"
+                          >
+                            ×
+                          </button>
+                        </div>
+                        
+                        {/* Content Section - Below */}
+                        <div className="p-8">
+                          <div className="space-y-4 mb-6">
+                            <div className="flex items-center">
+                              <span className="font-semibold text-gray-700 min-w-[120px]">Common Name:</span>
+                              <span className="text-lg text-gray-900 ml-2">{item.speciesData["Common Name"]}</span>
+                            </div>
+                            <div className="flex items-center">
+                              <span className="font-semibold text-gray-700 min-w-[120px]">Species Name:</span>
+                              <span className="text-lg text-gray-600 italic ml-2">{item.speciesData["Species Name"]}</span>
+                            </div>
+                          </div>
+                          
+                          <div className="mb-6">
+                            <div className="flex items-start">
+                              <span className="font-semibold text-gray-700 min-w-[120px] mt-1">Description:</span>
+                              <p className="text-gray-700 text-lg leading-relaxed ml-2">
+                                {item.speciesData["Description"]}
+                              </p>
+                            </div>
+                          </div>
+                          
+                          <div className="mt-8">
+                            <button
+                              onClick={() => {
+                                setUploadedItems([]);
+                                setDragActive(false);
+                              }}
+                              className="bg-blue-500 text-white px-6 py-3 rounded-lg hover:bg-blue-600 transition-colors duration-200 font-medium"
+                            >
+                              Upload Another Image
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    ) : (
+                      // Portrait layout: image on left, content on right
+                      <div className="grid grid-cols-1 lg:grid-cols-2">
+                        {/* Image Section - Left Half */}
+                        <div className="relative flex items-center justify-center p-8">
+                          <img
+                            src={item.image}
+                            alt={item.speciesData["Common Name"]}
+                            className="w-full max-w-md h-auto object-cover rounded-lg shadow-md"
+                          />
+                          <button
+                            onClick={() => removeItem(index)}
+                            className="absolute top-4 right-4 bg-red-500 text-white rounded-full w-8 h-8 flex items-center justify-center hover:bg-red-600 transition-colors duration-200 shadow-lg"
+                          >
+                            ×
+                          </button>
+                        </div>
+                        
+                        {/* Species Details - Right Half */}
+                        <div className="p-8 flex flex-col justify-center">
+                          <div className="space-y-4 mb-6">
+                            <div className="flex items-center">
+                              <span className="font-semibold text-gray-700 min-w-[120px]">Common Name:</span>
+                              <span className="text-lg text-gray-900 ml-2">{item.speciesData["Common Name"]}</span>
+                            </div>
+                            <div className="flex items-center">
+                              <span className="font-semibold text-gray-700 min-w-[120px]">Species Name:</span>
+                              <span className="text-lg text-gray-600 italic ml-2">{item.speciesData["Species Name"]}</span>
+                            </div>
+                          </div>
+                          
+                          <div className="mb-6">
+                            <div className="flex items-start">
+                              <span className="font-semibold text-gray-700 min-w-[120px] mt-1">Description:</span>
+                              <p className="text-gray-700 text-lg leading-relaxed ml-2">
+                                {item.speciesData["Description"]}
+                              </p>
+                            </div>
+                          </div>
+                          
+                          <div className="mt-8">
+                            <button
+                              onClick={() => {
+                                setUploadedItems([]);
+                                setDragActive(false);
+                              }}
+                              className="bg-blue-500 text-white px-6 py-3 rounded-lg hover:bg-blue-600 transition-colors duration-200 font-medium"
+                            >
+                              Upload Another Image
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                  </CardBody>
                   
-                  {/* Species Details - Right Half */}
-                  <div className="p-8 flex flex-col justify-center">
-                    <div className="space-y-4 mb-6">
-                      <div className="flex items-center">
-                        <span className="font-semibold text-gray-700 min-w-[120px]">Common Name:</span>
-                        <span className="text-lg text-gray-900 ml-2">{item.speciesData["Common Name"]}</span>
-                      </div>
-                      <div className="flex items-center">
-                        <span className="font-semibold text-gray-700 min-w-[120px]">Species Name:</span>
-                        <span className="text-lg text-gray-600 italic ml-2">{item.speciesData["Species Name"]}</span>
-                      </div>
-                    </div>
-                    
-                    <div className="mb-6">
-                      <div className="flex items-start">
-                        <span className="font-semibold text-gray-700 min-w-[120px] mt-1">Description:</span>
-                        <p className="text-gray-700 text-lg leading-relaxed ml-2">
-                          {item.speciesData["Description"]}
-                        </p>
-                      </div>
-                    </div>
-                    
-                    <div className="mt-8">
+                  {/* Horizontal Menu - Below image for both layouts */}
+                  <div className="px-8 pb-6">
+                    <div className="flex space-x-1 bg-gray-100 p-1 rounded-lg">
                       <button
-                        onClick={() => {
-                          setUploadedItems([]);
-                          setDragActive(false);
-                        }}
-                        className="bg-blue-500 text-white px-6 py-3 rounded-lg hover:bg-blue-600 transition-colors duration-200 font-medium"
+                        onClick={() => setActiveSection('foodChain')}
+                        className={`flex-1 py-2 px-4 rounded-md text-sm font-medium transition-all duration-200 ${
+                          activeSection === 'foodChain'
+                            ? 'bg-white text-blue-600 shadow-sm'
+                            : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+                        }`}
                       >
-                        Upload Another Image
+                        🦁 Food Chain Ecosystem
+                      </button>
+                      <button
+                        onClick={() => setActiveSection('habitat')}
+                        className={`flex-1 py-2 px-4 rounded-md text-sm font-medium transition-all duration-200 ${
+                          activeSection === 'habitat'
+                            ? 'bg-white text-blue-600 shadow-sm'
+                            : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+                        }`}
+                      >
+                        🌍 Habitat & Distribution
                       </button>
                     </div>
                   </div>
+                  
+                  {/* Dynamic Section Content - Below menu for both layouts */}
+                  <div className="px-8 pb-8">
+                    {activeSection === 'foodChain' && (
+                      <FoodChainGraph foodChain={item.speciesData["Food Chain"]} />
+                    )}
+                    {activeSection === 'habitat' && (
+                      <Habitat 
+                        speciesName={item.speciesData["Species Name"]} 
+                        commonName={item.speciesData["Common Name"]}
+                        habitatData={item.speciesData["Habitat"]}
+                      />
+                    )}
+                  </div>
                 </div>
-              </CardBody>
-            ))}
+              );
+            })}
           </div>
         )}
       </div>
