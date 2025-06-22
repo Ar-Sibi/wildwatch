@@ -7,8 +7,9 @@ import {
   ScrollRestoration,
 } from "react-router";
 
-import type { Route } from "./+types/root";
+import type { Route as RouteType } from "./+types/root";
 import "./app.css";
+import SideMenu from "./components/SideMenu";
 
 export function Layout({ children }: { children: React.ReactNode }) {
   return (
@@ -20,7 +21,12 @@ export function Layout({ children }: { children: React.ReactNode }) {
         <Links />
       </head>
       <body>
-        {children}
+        <div style={{ display: 'flex', flexDirection: 'row-reverse' }}>
+          <SideMenu />
+          <div style={{ flexGrow: 1 }}>
+            {children}
+          </div>
+        </div>
         <ScrollRestoration />
         <Scripts />
       </body>
@@ -32,7 +38,7 @@ export default function App() {
   return <Outlet />;
 }
 
-export function ErrorBoundary({ error }: Route.ErrorBoundaryProps) {
+export function ErrorBoundary({ error }: RouteType.ErrorBoundaryProps) {
   let message = "Oops!";
   let details = "An unexpected error occurred.";
   let stack: string | undefined;
