@@ -38,6 +38,16 @@ const Navigation: React.FC = () => {
             >
               🎬 Video Upload
             </Link>
+            <Link
+              to="/analytics"
+              className={`px-4 py-2 rounded-md text-sm font-medium transition-all duration-200 ${
+                location.pathname === '/analytics'
+                  ? 'bg-white text-blue-600 shadow-sm'
+                  : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+              }`}
+            >
+              📊 Analytics
+            </Link>
           </div>
         </div>
       </div>

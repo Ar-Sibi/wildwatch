@@ -129,6 +129,9 @@ const VideoUpload: React.FC = () => {
             thumbnail: thumbnailUrl,
             speciesData
           });
+
+          // Save to localStorage for analytics
+          saveToAnalytics(speciesData, videoUrl, 'video');
         }
       }
       
@@ -138,6 +141,46 @@ const VideoUpload: React.FC = () => {
       alert('Upload failed. Please try again.');
     } finally {
       setUploading(false);
+    }
+  };
+
+  const saveToAnalytics = (speciesData: SpeciesData, mediaUrl: string, type: 'image' | 'video') => {
+    try {
+      // Format habitat data to extract the most relevant information
+      let habitatString = "Unknown habitat";
+      if (speciesData["Habitat"]) {
+        if (typeof speciesData["Habitat"] === 'object' && speciesData["Habitat"] !== null) {
+          // If it's a structured habitat object, extract the most relevant info
+          if (speciesData["Habitat"]['Geographic Regions']) {
+            habitatString = speciesData["Habitat"]['Geographic Regions'];
+          } else if (speciesData["Habitat"]['Biomes']) {
+            habitatString = speciesData["Habitat"]['Biomes'];
+          } else {
+            habitatString = JSON.stringify(speciesData["Habitat"]);
+          }
+        } else {
+          habitatString = String(speciesData["Habitat"]);
+        }
+      }
+
+      const entry = {
+        id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
+        timestamp: new Date(),
+        speciesName: speciesData["Species Name"],
+        commonName: speciesData["Common Name"],
+        imageUrl: type === 'image' ? mediaUrl : undefined,
+        videoUrl: type === 'video' ? mediaUrl : undefined,
+        habitat: habitatString,
+        conservationStatus: "Stable", // Default, could be enhanced with actual status
+        type: type
+      };
+
+      const existingEntries = localStorage.getItem('wildwatch_entries');
+      const entries = existingEntries ? JSON.parse(existingEntries) : [];
+      entries.push(entry);
+      localStorage.setItem('wildwatch_entries', JSON.stringify(entries));
+    } catch (error) {
+      console.error('Error saving to analytics:', error);
     }
   };
 
