@@ -151,11 +151,6 @@ const ImageUpload: React.FC = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-green-50 to-blue-100 p-6">
       <div className="max-w-6xl mx-auto">
-        <div className="mb-8">
-          <h1 className="text-4xl font-bold text-gray-900 mb-2">WildWatch</h1>
-          <p className="text-lg text-gray-600">Upload images to identify wildlife and learn more about them.</p>
-        </div>
-
         {/* Upload Area - Only show if no species have been identified */}
         {uploadedItems.length === 0 && (
           <div className="grid grid-cols-1 gap-8">
@@ -198,9 +193,9 @@ const ImageUpload: React.FC = () => {
 
               {uploading && (
                 <div className="mt-4 p-4 bg-blue-50 rounded-lg">
-                  <div className="flex items-center space-x-3">
-                    <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-500"></div>
-                    <span className="text-blue-700">Analyzing species...</span>
+                  <div className="flex items-center justify-center">
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 mr-3"></div>
+                    <span className="text-blue-700">Analyzing image...</span>
                   </div>
                 </div>
               )}

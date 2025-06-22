@@ -9,7 +9,7 @@ import {
 
 import type { Route as RouteType } from "./+types/root";
 import "./app.css";
-import SideMenu from "./components/SideMenu";
+import Navigation from "./components/Navigation";
 
 export function Layout({ children }: { children: React.ReactNode }) {
   return (
@@ -21,11 +21,9 @@ export function Layout({ children }: { children: React.ReactNode }) {
         <Links />
       </head>
       <body>
-        <div style={{ display: 'flex', flexDirection: 'row-reverse' }}>
-          <SideMenu />
-          <div style={{ flexGrow: 1 }}>
-            {children}
-          </div>
+        <Navigation />
+        <div style={{ flexGrow: 1 }}>
+          {children}
         </div>
         <ScrollRestoration />
         <Scripts />

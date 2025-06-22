@@ -1,7 +1,6 @@
 import { type RouteConfig, index, route } from "@react-router/dev/routes";
 
 export default [
-  index("routes/home.tsx"),
-  route("image-upload", "routes/image-upload.tsx"),
-  route("profile", "routes/profile.tsx"),
+  index("routes/image-upload.tsx"),
+  route("video-upload", "routes/video-upload.tsx"),
 ] satisfies RouteConfig;
