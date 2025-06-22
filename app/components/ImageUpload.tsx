@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import CardBody from './CardBody';
 import FoodChainGraph from './FoodChainGraph';
 import Habitat from './Habitat';
+import Conservation from './Conservation';
 
 interface SpeciesData {
   "Species Name": string;
@@ -18,6 +19,8 @@ interface SpeciesData {
     "Population Status": string;
     "Conservation Status": string;
   }>;
+  "Conservation Efforts": string;
+  "How to Help": string;
 }
 
 interface UploadedItem {
@@ -29,7 +32,7 @@ const ImageUpload: React.FC = () => {
   const [dragActive, setDragActive] = useState(false);
   const [uploadedItems, setUploadedItems] = useState<UploadedItem[]>([]);
   const [uploading, setUploading] = useState(false);
-  const [activeSection, setActiveSection] = useState<'foodChain' | 'habitat'>('foodChain');
+  const [activeSection, setActiveSection] = useState<'foodChain' | 'habitat' | 'conservation'>('foodChain');
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleDrag = (e: React.DragEvent) => {
@@ -346,6 +349,16 @@ const ImageUpload: React.FC = () => {
                       >
                         🌍 Habitat & Distribution
                       </button>
+                      <button
+                        onClick={() => setActiveSection('conservation')}
+                        className={`flex-1 py-2 px-4 rounded-md text-sm font-medium transition-all duration-200 ${
+                          activeSection === 'conservation'
+                            ? 'bg-white text-blue-600 shadow-sm'
+                            : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+                        }`}
+                      >
+                        🛡️ Conservation & Help
+                      </button>
                     </div>
                   </div>
                   
@@ -360,6 +373,14 @@ const ImageUpload: React.FC = () => {
                         commonName={item.speciesData["Common Name"]}
                         habitatData={item.speciesData["Habitat"]}
                         habitatHotspots={item.speciesData["Habitat Hotspots"]}
+                      />
+                    )}
+                    {activeSection === 'conservation' && (
+                      <Conservation 
+                        speciesName={item.speciesData["Species Name"]} 
+                        commonName={item.speciesData["Common Name"]}
+                        conservationEfforts={item.speciesData["Conservation Efforts"]}
+                        howToHelp={item.speciesData["How to Help"]}
                       />
                     )}
                   </div>
