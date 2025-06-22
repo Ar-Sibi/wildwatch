@@ -5,9 +5,18 @@ interface HabitatProps {
   speciesName: string;
   commonName: string;
   habitatData?: string | object;
+  habitatHotspots?: Array<{
+    Name: string;
+    Region: string;
+    Latitude: number;
+    Longitude: number;
+    Description: string;
+    "Population Status": string;
+    "Conservation Status": string;
+  }>;
 }
 
-const Habitat: React.FC<HabitatProps> = ({ speciesName, commonName, habitatData }) => {
+const Habitat: React.FC<HabitatProps> = ({ speciesName, commonName, habitatData, habitatHotspots }) => {
   // If we have habitat data from the API, display it
   if (habitatData && habitatData !== "No habitat information available.") {
     // Handle both string and object formats
@@ -40,7 +49,7 @@ const Habitat: React.FC<HabitatProps> = ({ speciesName, commonName, habitatData 
           <HabitatMap 
             speciesName={speciesName} 
             commonName={commonName} 
-            hotspots={[]}
+            hotspots={habitatHotspots || []}
           />
         </div>
       </div>
@@ -191,7 +200,7 @@ const Habitat: React.FC<HabitatProps> = ({ speciesName, commonName, habitatData 
         <HabitatMap 
           speciesName={speciesName} 
           commonName={commonName} 
-          hotspots={[]}
+          hotspots={habitatHotspots || []}
         />
       </div>
     </div>

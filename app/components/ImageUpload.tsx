@@ -9,6 +9,15 @@ interface SpeciesData {
   "Description": string;
   "Food Chain": string;
   "Habitat": string;
+  "Habitat Hotspots": Array<{
+    Name: string;
+    Region: string;
+    Latitude: number;
+    Longitude: number;
+    Description: string;
+    "Population Status": string;
+    "Conservation Status": string;
+  }>;
 }
 
 interface UploadedItem {
@@ -350,6 +359,7 @@ const ImageUpload: React.FC = () => {
                         speciesName={item.speciesData["Species Name"]} 
                         commonName={item.speciesData["Common Name"]}
                         habitatData={item.speciesData["Habitat"]}
+                        habitatHotspots={item.speciesData["Habitat Hotspots"]}
                       />
                     )}
                   </div>
