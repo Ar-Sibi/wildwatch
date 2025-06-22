@@ -16,14 +16,75 @@ const Conservation: React.FC<ConservationProps> = ({
   // Helper function to convert object to string if needed
   const formatText = (data: any): string => {
     if (typeof data === 'string') {
+      // Check if it's a JSON string and try to parse it
+      if (data.trim().startsWith('{') || data.trim().startsWith('[')) {
+        try {
+          const parsed = JSON.parse(data);
+          return formatStructuredData(parsed);
+        } catch (e) {
+          // If parsing fails, return as regular string
+          return data;
+        }
+      }
       return data;
+    } else if (Array.isArray(data)) {
+      // Handle arrays - format as bullet points
+      return data.map((item, index) => {
+        if (typeof item === 'string') {
+          return `• ${item}`;
+        } else if (typeof item === 'object' && item !== null) {
+          return formatStructuredData(item);
+        }
+        return `• ${String(item)}`;
+      }).join('\n\n');
     } else if (typeof data === 'object' && data !== null) {
       // Convert object to formatted string
-      return Object.entries(data)
-        .map(([key, value]) => `${key}: ${value}`)
-        .join('\n\n');
+      return formatStructuredData(data);
     }
-    return '';
+    return String(data || '');
+  };
+
+  // Helper function to format structured data in a user-friendly way
+  const formatStructuredData = (data: any): string => {
+    if (typeof data === 'string') {
+      return data;
+    } else if (Array.isArray(data)) {
+      return data.map((item, index) => {
+        if (typeof item === 'string') {
+          return `• ${item}`;
+        } else if (typeof item === 'object' && item !== null) {
+          // Handle objects with Action, Link, Description structure
+          if (item.Action && item.Description) {
+            let result = `**${item.Action}**`;
+            if (item.Link) {
+              result += ` (${item.Link})`;
+            }
+            result += `: ${item.Description}`;
+            return result;
+          }
+          // Handle other object structures
+          return Object.entries(item)
+            .map(([key, value]) => `${key}: ${value}`)
+            .join(', ');
+        }
+        return `• ${String(item)}`;
+      }).join('\n\n');
+    } else if (typeof data === 'object' && data !== null) {
+      const sections: string[] = [];
+      
+      for (const [key, value] of Object.entries(data)) {
+        if (Array.isArray(value)) {
+          sections.push(`**${key}:**\n${value.map((item, index) => `• ${item}`).join('\n')}`);
+        } else if (typeof value === 'object' && value !== null) {
+          sections.push(`**${key}:**\n${formatStructuredData(value)}`);
+        } else {
+          sections.push(`**${key}:** ${value}`);
+        }
+      }
+      
+      return sections.join('\n\n');
+    }
+    return String(data);
   };
 
   // Format the data
@@ -76,7 +137,51 @@ const Conservation: React.FC<ConservationProps> = ({
               Ongoing Conservation Efforts
             </h4>
             <div className="text-green-800 leading-relaxed mb-4 whitespace-pre-line">
-              {formattedConservationEfforts}
+              {formattedConservationEfforts && formattedConservationEfforts !== "No conservation information available." ? (
+                <div className="space-y-3">
+                  {formattedConservationEfforts.split('\n\n').map((section, index) => (
+                    <div key={index} className="bg-white p-3 rounded border border-green-100">
+                      {section.split('\n').map((line, lineIndex) => {
+                        if (line.startsWith('**') && line.endsWith('**')) {
+                          // Bold section headers
+                          return (
+                            <div key={lineIndex} className="font-semibold text-green-900 mb-2">
+                              {line.replace(/\*\*/g, '')}
+                            </div>
+                          );
+                        } else if (line.startsWith('•')) {
+                          // Bullet points
+                          return (
+                            <div key={lineIndex} className="ml-4 text-green-800">
+                              {line}
+                            </div>
+                          );
+                        } else if (line.includes('**') && line.includes(':')) {
+                          // Bold action with description
+                          const parts = line.split(':');
+                          const action = parts[0].replace(/\*\*/g, '');
+                          const description = parts.slice(1).join(':');
+                          return (
+                            <div key={lineIndex} className="mb-2">
+                              <span className="font-semibold text-green-900">{action}:</span>
+                              <span className="text-green-800">{description}</span>
+                            </div>
+                          );
+                        } else {
+                          // Regular text
+                          return (
+                            <div key={lineIndex} className="text-green-800">
+                              {line}
+                            </div>
+                          );
+                        }
+                      })}
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <p>You can help wildlife conservation by supporting reputable conservation organizations, reducing your environmental impact, and educating others about the importance of biodiversity.</p>
+              )}
             </div>
             
             {/* Conservation Links */}
@@ -108,7 +213,51 @@ const Conservation: React.FC<ConservationProps> = ({
               How You Can Help
             </h4>
             <div className="text-blue-800 leading-relaxed mb-4 whitespace-pre-line">
-              {formattedHowToHelp}
+              {formattedHowToHelp && formattedHowToHelp !== "No information on how to help available." ? (
+                <div className="space-y-3">
+                  {formattedHowToHelp.split('\n\n').map((section, index) => (
+                    <div key={index} className="bg-white p-3 rounded border border-blue-100">
+                      {section.split('\n').map((line, lineIndex) => {
+                        if (line.startsWith('**') && line.endsWith('**')) {
+                          // Bold section headers
+                          return (
+                            <div key={lineIndex} className="font-semibold text-blue-900 mb-2">
+                              {line.replace(/\*\*/g, '')}
+                            </div>
+                          );
+                        } else if (line.startsWith('•')) {
+                          // Bullet points
+                          return (
+                            <div key={lineIndex} className="ml-4 text-blue-800">
+                              {line}
+                            </div>
+                          );
+                        } else if (line.includes('**') && line.includes(':')) {
+                          // Bold action with description
+                          const parts = line.split(':');
+                          const action = parts[0].replace(/\*\*/g, '');
+                          const description = parts.slice(1).join(':');
+                          return (
+                            <div key={lineIndex} className="mb-2">
+                              <span className="font-semibold text-blue-900">{action}:</span>
+                              <span className="text-blue-800">{description}</span>
+                            </div>
+                          );
+                        } else {
+                          // Regular text
+                          return (
+                            <div key={lineIndex} className="text-blue-800">
+                              {line}
+                            </div>
+                          );
+                        }
+                      })}
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <p>You can help wildlife conservation by supporting reputable conservation organizations, reducing your environmental impact, and educating others about the importance of biodiversity. Consider donating to organizations like WWF, volunteering with local conservation groups, and making sustainable choices in your daily life.</p>
+              )}
             </div>
             
             {/* Help Links */}
@@ -201,9 +350,9 @@ const Conservation: React.FC<ConservationProps> = ({
             <span className="text-green-500 mr-2">🛡️</span>
             Ongoing Conservation Efforts
           </h4>
-          <p className="text-green-800 leading-relaxed">
+          <div className="text-green-800 leading-relaxed mb-4 whitespace-pre-line">
             {conservationInfo.efforts}
-          </p>
+          </div>
         </div>
 
         {/* How to Help */}
@@ -212,9 +361,9 @@ const Conservation: React.FC<ConservationProps> = ({
             <span className="text-blue-500 mr-2">🤝</span>
             How You Can Help
           </h4>
-          <p className="text-blue-800 leading-relaxed">
+          <div className="text-blue-800 leading-relaxed mb-4 whitespace-pre-line">
             {conservationInfo.help}
-          </p>
+          </div>
         </div>
 
         {/* Additional Resources */}
